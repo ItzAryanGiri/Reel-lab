@@ -1,0 +1,314 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#000000">
+<title>ReelLab</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:#000;color:#f5f5f5;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+}
+button{cursor:pointer;font:inherit;color:inherit}
+.app{max-width:1000px;margin:auto;min-height:100vh}
+header{
+  height:60px;border-bottom:1px solid #262626;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;position:sticky;top:0;background:#000;z-index:5;
+}
+.brand{font-family:Georgia,serif;font-size:27px;font-weight:bold;letter-spacing:-1px}
+.header-actions{display:flex;gap:20px;font-size:23px}
+.icon-btn{background:none;border:0;font-size:23px}
+.layout{display:grid;grid-template-columns: minmax(0,650px) 290px;gap:35px;padding:20px}
+.stories{
+  display:flex;gap:17px;overflow-x:auto;padding:4px 0 20px;
+  border-bottom:1px solid #262626;scrollbar-width:none;
+}
+.story{flex:0 0 65px;text-align:center;font-size:11px;color:#ddd}
+.story-ring{
+  width:62px;height:62px;border-radius:50%;padding:3px;
+  background:linear-gradient(40deg,#ffd776,#ff416c,#9b36ff);
+  margin:0 auto 6px;
+}
+.story-ring img{
+  width:100%;height:100%;border-radius:50%;
+  border:3px solid #000;object-fit:cover;
+}
+.post{margin-top:20px;border-bottom:1px solid #262626;padding-bottom:18px}
+.post-head{display:flex;align-items:center;gap:10px;padding:0 0 12px}
+.avatar{
+  width:34px;height:34px;border-radius:50%;object-fit:cover;
+}
+.user-info{font-size:12px;flex:1}
+.user-info strong{display:block;margin-bottom:3px}
+.muted{color:#999}
+.more{background:none;border:0;font-size:20px}
+.post-image{
+  width:100%;aspect-ratio:1/1;object-fit:cover;
+  display:block;background:#171717;
+}
+.post-actions{display:flex;align-items:center;gap:15px;padding:12px 0}
+.post-actions button{background:none;border:0;font-size:24px}
+.post-actions .save{margin-left:auto}
+.caption{font-size:13px;line-height:1.5}
+.caption strong{margin-right:5px}
+.comments{font-size:12px;color:#999;margin-top:7px}
+.add-comment{display:flex;margin-top:12px}
+.add-comment input{
+  background:transparent;border:0;color:white;outline:0;
+  width:100%;font-size:12px;
+}
+.add-comment button{background:none;border:0;color:#79aaff;font-size:12px}
+.sidebar{padding-top:12px}
+.profile-row{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.profile-row img{width:45px;height:45px;border-radius:50%}
+.profile-text{flex:1;font-size:12px}
+.profile-text span{display:block;color:#999;margin-top:4px}
+.blue{color:#79aaff;font-size:12px;font-weight:bold}
+.suggest-title{display:flex;justify-content:space-between;color:#999;font-size:13px;margin:25px 0 18px}
+.suggestion{display:flex;align-items:center;gap:10px;margin-bottom:17px}
+.suggestion img{width:35px;height:35px;border-radius:50%}
+.suggestion-info{flex:1;font-size:12px}
+.suggestion-info span{display:block;color:#888;margin-top:4px}
+.sidebar-footer{color:#626262;font-size:11px;line-height:1.8;margin-top:35px}
+.bottom-nav{display:none}
+.page{display:none}
+.page.active{display:block}
+.empty-page{text-align:center;padding:100px 20px;color:#aaa}
+.empty-page h2{color:white;margin-bottom:10px}
+@media(max-width:760px){
+  .layout{display:block;padding:12px 0 70px}
+  .stories{padding:5px 13px 17px}
+  .post{margin-top:15px}
+  .post-head,.post-actions,.caption,.comments,.add-comment{margin-left:13px;margin-right:13px}
+  .post-image{aspect-ratio:1/1}
+  .sidebar{display:none}
+  .bottom-nav{
+    display:flex;position:fixed;bottom:0;left:0;right:0;
+    height:55px;background:#000;border-top:1px solid #262626;
+    align-items:center;justify-content:space-around;z-index:10;
+  }
+  .bottom-nav button{background:none;border:0;font-size:23px}
+  header{padding:0 14px}
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<header>
+  <div class="brand">ReelLab</div>
+  <div class="header-actions">
+    <button class="icon-btn" aria-label="Notifications">♡</button>
+    <button class="icon-btn" aria-label="Messages">➤</button>
+  </div>
+</header>
+
+<div class="layout">
+<main>
+
+<section id="home" class="page active">
+
+<div class="stories" id="stories"></div>
+
+<div id="feed"></div>
+
+</section>
+
+<section id="reels" class="page">
+  <div class="empty-page">
+    <h2>Reels</h2>
+    <p>Your short-video space.</p>
+  </div>
+</section>
+
+<section id="create" class="page">
+  <div class="empty-page">
+    <h2>Create</h2>
+    <p>Create and share your own content.</p>
+  </div>
+</section>
+
+<section id="profile" class="page">
+  <div class="empty-page">
+    <h2>@yourprofile</h2>
+    <p>Your profile and posts will appear here.</p>
+  </div>
+</section>
+
+<aside class="sidebar">
+  <div class="profile-row">
+    <img src="https://i.pravatar.cc/100?img=12">
+    <div class="profile-text">
+      <strong>yourprofile</strong>
+      <span>Your profile</span>
+    </div>
+    <span class="blue">Switch</span>
+  </div>
+
+  <div class="suggest-title">
+    <strong>Suggested for you</strong>
+    <strong style="color:white">See All</strong>
+  </div>
+
+  <div id="suggestions"></div>
+
+  <div class="sidebar-footer">
+    About · Help · Press · API · Jobs · Privacy<br>
+    Terms · Locations · Language<br><br>
+    © 2026 REELLAB
+  </div>
+</aside>
+
+</main>
+</div>
+
+<nav class="bottom-nav">
+  <button onclick="showPage('home')">⌂</button>
+  <button onclick="showPage('reels')">▣</button>
+  <button onclick="showPage('create')">＋</button>
+  <button onclick="showPage('profile')">◉</button>
+</nav>
+
+</div>
+
+<script>
+const storyData = [
+ ["Your story",12],["alex",3],["sarah",5],["mike",8],
+ ["emma",9],["james",11],["olivia",16],["noah",20]
+];
+
+const posts = [
+ {
+  user:"alex.morgan",avatar:3,
+  location:"New York",
+  image:"https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=1000",
+  caption:"Somewhere between the mountains and the sky. ✨",
+  likes:1248
+ },
+ {
+  user:"sarah.visuals",avatar:5,
+  location:"Photography",
+  image:"https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1000",
+  caption:"A little moment of peace. 🌊",
+  likes:892
+ },
+ {
+  user:"mike.travels",avatar:8,
+  location:"Travel diary",
+  image:"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1000",
+  caption:"Collect moments, not things.",
+  likes:2150
+ }
+];
+
+document.getElementById("stories").innerHTML =
+ storyData.map(([name,id],i)=>`
+ <div class="story">
+   <div class="story-ring">
+     <img src="https://i.pravatar.cc/100?img=${id}">
+   </div>
+   ${name}
+ </div>
+ `).join("");
+
+document.getElementById("feed").innerHTML =
+ posts.map((post,i)=>`
+ <article class="post">
+   <div class="post-head">
+     <img class="avatar" src="https://i.pravatar.cc/100?img=${post.avatar}">
+     <div class="user-info">
+       <strong>${post.user}</strong>
+       <span class="muted">${post.location}</span>
+     </div>
+     <button class="more">•••</button>
+   </div>
+
+   <img class="post-image" src="${post.image}" alt="Post by ${post.user}">
+
+   <div class="post-actions">
+     <button onclick="likePost(this,${post.likes})">♡</button>
+     <button onclick="focusComment(${i})">♧</button>
+     <button onclick="sharePost()">➤</button>
+     <button class="save" onclick="savePost(this)">♧</button>
+   </div>
+
+   <div class="caption">
+     <strong id="likes-${i}">${post.likes.toLocaleString()} likes</strong><br>
+     <strong>${post.user}</strong>${post.caption}
+   </div>
+
+   <div class="comments" id="comments-${i}">View all comments</div>
+
+   <div class="add-comment">
+     <input id="comment-${i}" placeholder="Add a comment...">
+     <button onclick="addComment(${i})">Post</button>
+   </div>
+ </article>
+ `).join("");
+
+const people = [
+ ["jordan",14],["lisa",18],["david",22],["mia",25]
+];
+
+document.getElementById("suggestions").innerHTML =
+ people.map(([name,id])=>`
+ <div class="suggestion">
+   <img src="https://i.pravatar.cc/100?img=${id}">
+   <div class="suggestion-info">
+     <strong>${name}.official</strong>
+     <span>Suggested for you</span>
+   </div>
+   <span class="blue">Follow</span>
+ </div>
+ `).join("");
+
+function likePost(button,likes){
+ const liked = button.dataset.liked === "true";
+ button.dataset.liked = String(!liked);
+ button.textContent = liked ? "♡" : "♥";
+ button.style.color = liked ? "white" : "#ff4268";
+ button.nextLike = !liked;
+ const index = [...document.querySelectorAll(".post-actions button")].indexOf(button);
+ const postIndex = Math.floor(index/4);
+ const count = document.getElementById("likes-"+postIndex);
+ count.textContent = (likes + (liked ? 0 : 1)).toLocaleString()+" likes";
+}
+
+function focusComment(i){
+ document.getElementById("comment-"+i).focus();
+}
+
+function addComment(i){
+ const input = document.getElementById("comment-"+i);
+ if(!input.value.trim()) return;
+ document.getElementById("comments-"+i).textContent =
+   "You: "+input.value;
+ input.value="";
+}
+
+function savePost(button){
+ button.textContent = button.textContent === "♧" ? "▣" : "♧";
+}
+
+function sharePost(){
+ if(navigator.share){
+   navigator.share({title:"ReelLab",text:"Check out this post!"});
+ } else {
+   alert("Sharing is not supported in this browser.");
+ }
+}
+
+function showPage(page){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ document.getElementById(page).classList.add("active");
+ window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
